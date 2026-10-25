@@ -5,9 +5,9 @@ spring:
   application:
     name: messagerie
   datasource:
-    url: jdbc:h2:file:./data/messagerie
-    username: sa
-    password: ""
+    url: jdbc:mysql://localhost:3306/messagerie_app?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+    username: messagerie_user
+    password: ${DB_PASSWORD}
   jpa:
     open-in-view: false
     hibernate:
