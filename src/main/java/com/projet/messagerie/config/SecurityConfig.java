@@ -27,6 +27,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(a -> a
                 .requestMatchers(HttpMethod.POST, "/api/comptes", "/api/auth/login").permitAll()
                 .requestMatchers("/error").permitAll()
+                .requestMatchers("/ws/**").permitAll()        // le WebSocket vérifie le jeton lui-même (JwtHandshakeInterceptor)
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // la doc
                 .anyRequest().authenticated())                 // tout le reste exige un jeton valide
             .addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
