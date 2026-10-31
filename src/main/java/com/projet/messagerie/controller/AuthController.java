@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import com.projet.messagerie.dto.LoginRequest;
+import com.projet.messagerie.dto.LoginResponse;
 
 @RestController
 @RequestMapping("/api")
@@ -28,5 +30,12 @@ public class AuthController {
     public CompteResponse creerCompte(@Valid @RequestBody CompteRequest requete) {
         Utilisateur u = authService.creerCompte(requete.username(), requete.motDePasse());
         return new CompteResponse(u.getId(), u.getUsername());
+    }
+
+
+    /** Authentifie : 200 + JWT, 401 si les identifiants sont faux. */
+    @PostMapping("/auth/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest requete) {
+        return authService.login(requete.username(), requete.motDePasse());
     }
 }

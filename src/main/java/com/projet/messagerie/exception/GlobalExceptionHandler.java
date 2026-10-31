@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -29,10 +28,11 @@ public class GlobalExceptionHandler {
         return reponse(HttpStatus.BAD_REQUEST, "Corps JSON absent ou mal formé");
     }
 
-    /** En-tête obligatoire absent (X-Utilisateur-Id, provisoire jusqu'au JWT) → 400 */
-    @ExceptionHandler(MissingRequestHeaderException.class)
-    public ResponseEntity<ErreurDto> enteteManquant(MissingRequestHeaderException e) {
-        return reponse(HttpStatus.BAD_REQUEST, "En-tête manquant : " + e.getHeaderName());
+    
+    /** Mauvais nom ou mauvais mot de passe au login → 401 */
+    @ExceptionHandler(IdentifiantsInvalidesException.class)
+    public ResponseEntity<ErreurDto> identifiantsInvalides(IdentifiantsInvalidesException e) {
+        return reponse(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 
     @ExceptionHandler(NomDejaPrisException.class)

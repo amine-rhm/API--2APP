@@ -36,3 +36,4 @@ build/
 data/
 .metals/
 .vscode/
+*.code-workspace

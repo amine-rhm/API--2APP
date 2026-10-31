@@ -12,3 +12,8 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: update
+app:
+  jwt:
+    # au moins 32 caractères, fourni par la variable d'environnement JWT_SECRET
+    secret: ${JWT_SECRET}
+    expiration-minutes: 60
