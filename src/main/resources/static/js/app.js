@@ -60,6 +60,7 @@ function changerOnglet(mode) {
 
 async function soumettreAuth(evenement) {
   evenement.preventDefault();
+  demanderPermissionNotifications(); // pendant le clic : les navigateurs l'exigent
   const identifiants = { username: $("#auth-nom").value.trim(), motDePasse: $("#auth-mdp").value };
   const bouton = $("#auth-bouton");
   bouton.disabled = true;
@@ -177,7 +178,57 @@ function recevoirMessage(m) {
     etat.nonLus.set(autre, (etat.nonLus.get(autre) || 0) + 1);
     afficherContacts();
     majTitre();
+    banniere(m);              // une autre conversation est ouverte : on prévient dans l'appli
   }
+  if (!deMoi && document.hidden) {
+    notificationSysteme(m);   // l'onglet est en arrière-plan : notification macOS / Windows / Android
+  }
+}
+
+/* ================= Notifications ================= */
+
+/** Petite bannière cliquable en bas de l'écran : « 🐨 alice — Salut ! ». */
+function banniere(m) {
+  const expediteur = contact(m.expediteurId) || { id: m.expediteurId, username: "Nouveau message" };
+  const el = document.createElement("button");
+  el.type = "button";
+  el.className = "banniere";
+  const texte = document.createElement("span");
+  texte.className = "texte";
+  const nom = document.createElement("strong");
+  nom.textContent = expediteur.username;
+  const apercu = document.createElement("span");
+  apercu.textContent = m.contenu;
+  texte.append(nom, apercu);
+  el.append(avatar(expediteur), texte);
+  el.addEventListener("click", () => {
+    el.remove();
+    ouvrirConversation(m.expediteurId);
+  });
+  $("#toasts").append(el);
+  setTimeout(() => el.remove(), 5000);
+}
+
+function demanderPermissionNotifications() {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
+
+function notificationSysteme(m) {
+  if (!("Notification" in window) || Notification.permission !== "granted") {
+    return; // refusée, ou pas disponible (ex. page en http:// sur un téléphone)
+  }
+  const expediteur = contact(m.expediteurId);
+  const notif = new Notification(expediteur ? expediteur.username : "Écho", {
+    body: m.contenu,
+    tag: "echo-" + m.expediteurId, // plusieurs messages de la même personne : une seule notification
+  });
+  notif.onclick = () => {
+    window.focus();
+    ouvrirConversation(m.expediteurId);
+    notif.close();
+  };
 }
 
 /* ================= Contacts ================= */

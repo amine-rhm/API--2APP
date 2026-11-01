@@ -1,0 +1,12 @@
+# Profil « test » : base H2 en mémoire, recréée à chaque lancement. MySQL n'est jamais touché.
+spring:
+  datasource:
+    url: jdbc:h2:mem:messagerie-test;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+app:
+  jwt:
+    secret: secret-de-test-uniquement-pour-les-tests-junit

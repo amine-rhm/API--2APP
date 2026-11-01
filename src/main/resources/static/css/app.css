@@ -316,7 +316,7 @@ label input { font-size: 16px; color: var(--texte); }
 .toasts {
   position: fixed;
   left: 50%;
-  bottom: 24px;
+  bottom: 92px;
   z-index: 10;
   display: grid;
   gap: 8px;
@@ -331,6 +331,28 @@ label input { font-size: 16px; color: var(--texte); }
   font-size: 14px;
   animation: arrivee .2s ease-out;
 }
+
+/* bannière « nouveau message » (une autre conversation est ouverte) */
+.banniere {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px 10px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--panneau);
+  color: var(--sur-panneau);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(27, 42, 74, .25);
+  animation: arrivee .25s ease-out;
+}
+.banniere .avatar { width: 36px; height: 36px; font-size: 19px; }
+.banniere .texte { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.banniere .texte span { overflow: hidden; color: var(--panneau-doux); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.banniere::after { content: "→"; color: var(--attention); }
+
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

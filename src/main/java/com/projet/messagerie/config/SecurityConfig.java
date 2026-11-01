@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .requestMatchers("/ws/**").permitAll()        // le WebSocket vérifie le jeton lui-même (JwtHandshakeInterceptor)
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // la doc
                 .requestMatchers("/", "/index.html", "/bureau.html", "/mobile.html", "/css/**", "/js/**").permitAll() // les pages des clients
+                .requestMatchers(HttpMethod.POST, "/simulation/webhook").permitAll() // le service tiers simulé (bonus webhook)
                 .anyRequest().authenticated())                 // tout le reste exige un jeton valide
             .addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
         return http.build();

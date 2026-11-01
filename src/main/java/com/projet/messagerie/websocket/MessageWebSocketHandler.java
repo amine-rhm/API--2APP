@@ -3,6 +3,7 @@ package com.projet.messagerie.websocket;
 import com.projet.messagerie.dto.MessageDto;
 import com.projet.messagerie.dto.WsErreurDto;
 import com.projet.messagerie.exception.MessageInvalideException;
+import com.projet.messagerie.notification.NotificationService;
 import com.projet.messagerie.security.JwtHandshakeInterceptor;
 import com.projet.messagerie.service.MessageService;
 import org.slf4j.Logger;
@@ -24,7 +25,8 @@ import tools.jackson.databind.node.ObjectNode;
  *   2. le message est validé et enregistré en base (MessageService)
  *   3. il est retransmis au destinataire s'il a des connexions ouvertes
  *   4. il est renvoyé à l'expéditeur, comme confirmation (avec l'id et la date du serveur)
- * Destinataire hors ligne : l'étape 3 ne fait rien, mais le message est déjà en base (historique).
+ * Destinataire hors ligne : l'étape 3 ne fait rien, mais le message est déjà en base (historique),
+ * et un webhook prévient un service tiers de notifications (NotificationService).
  */
 @Component
 public class MessageWebSocketHandler extends TextWebSocketHandler {
@@ -36,11 +38,14 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
 
     private final SessionRegistry registre;
     private final MessageService messageService;
+    private final NotificationService notifications;
     private final JsonMapper mapper;
 
-    public MessageWebSocketHandler(SessionRegistry registre, MessageService messageService, JsonMapper mapper) {
+    public MessageWebSocketHandler(SessionRegistry registre, MessageService messageService,
+                                   NotificationService notifications, JsonMapper mapper) {
         this.registre = registre;
         this.messageService = messageService;
+        this.notifications = notifications;
         this.mapper = mapper;
     }
 
@@ -96,6 +101,10 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
         String payload = mapper.writeValueAsString(message);
         registre.envoyerA(message.destinataireId(), payload);
         registre.envoyerA(expediteurId, payload);
+
+        if (!registre.estEnLigne(message.destinataireId())) {
+            notifications.messageHorsLigne(message); // bonus : webhook vers le service de notifications
+        }
     }
 
     /** Bonus « X est en train d'écrire » : rien en base, simplement relayé au destinataire s'il est connecté. */
