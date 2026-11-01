@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Écho</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='1' y='4' width='22' height='14' rx='7' fill='%23d9673e'/><rect x='9' y='14' width='22' height='14' rx='7' fill='%239cbfa7'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Work+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    /* ----- Mise en page « mobile » : un écran à la fois, comme une appli ----- */
+    body { overscroll-behavior: none; }
+
+    .auth { display: flex; flex-direction: column; min-height: 100dvh; }
+    .affiche {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      padding: max(24px, env(safe-area-inset-top)) 24px 32px;
+      border-radius: 0 0 32px 32px;
+    }
+    .affiche h1 { font-size: 46px; }
+    .affiche p { max-width: 220px; margin: 12px 0 0; font-size: 14px; }
+    .affiche .deco-lui { right: 30px; bottom: 56px; width: 100px; height: 40px; }
+    .affiche .deco-moi { right: -24px; bottom: 16px; width: 130px; height: 46px; }
+    .affiche .deco-saisie { right: 24px; bottom: 108px; width: 58px; height: 28px; gap: 4px; }
+    .affiche .deco-saisie span { width: 6px; height: 6px; }
+    .auth-form { max-width: none; padding: 28px 24px max(24px, env(safe-area-inset-bottom)); }
+    .auth-form h2 { font-size: 24px; }
+    input, textarea { font-size: 16px; } /* 16 px minimum : sinon iOS zoome sur le champ */
+
+    .app { height: 100dvh; }
+    .barre, .conversation { display: flex; flex-direction: column; height: 100dvh; }
+    .conversation { display: none; }
+    /* conversation ouverte : elle remplace la liste */
+    .conversation-ouverte .barre { display: none; }
+    .conversation-ouverte .conversation { display: flex; }
+
+    .profil { display: flex; align-items: center; gap: 12px; padding: max(14px, env(safe-area-inset-top)) 12px 6px 20px; }
+    .profil > div { flex: 1; display: grid; gap: 3px; min-width: 0; }
+    .titre-liste { margin: 18px 20px 12px; font-family: var(--titre); font-size: 34px; font-weight: 400; }
+    .titre-liste em { color: var(--attention); }
+
+    .conv-entete { padding: max(12px, env(safe-area-inset-top)) 16px 10px 8px; gap: 10px; }
+    .conv-entete strong { font-size: 19px; }
+    .messages { padding: 8px 14px 14px; }
+    .bulle { max-width: 82%; }
+    .indicateur { margin: 0 14px 10px; }
+    .composer { padding: 8px 12px max(12px, env(safe-area-inset-bottom)) 14px; }
+  </style>
+</head>
+<body class="mobile">
+
+  <!-- Écran 1 : connexion / inscription -->
+  <section id="ecran-auth" class="auth">
+    <div class="affiche">
+      <span class="logo">Écho</span>
+      <div>
+        <h1>Parle,<br><em>en direct.</em></h1>
+        <p>Tes messages arrivent instantanément sur l'autre appareil.</p>
+      </div>
+      <div class="deco deco-lui" aria-hidden="true"></div>
+      <div class="deco deco-moi" aria-hidden="true"></div>
+      <div class="deco deco-saisie" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+
+    <form id="form-auth" class="auth-form" novalidate>
+      <h2>Bienvenue&nbsp;!</h2>
+      <div class="onglets">
+        <button type="button" class="onglet actif" data-onglet="connexion">Connexion</button>
+        <button type="button" class="onglet" data-onglet="inscription">Inscription</button>
+      </div>
+      <label>Nom d'utilisateur
+        <input id="auth-nom" autocomplete="username" autocapitalize="none" autocorrect="off" required>
+      </label>
+      <label>Mot de passe
+        <input id="auth-mdp" type="password" autocomplete="current-password" required>
+      </label>
+      <p id="auth-aide" class="aide" hidden>3 à 30 caractères (lettres, chiffres, _) · mot de passe de 8 caractères minimum</p>
+      <p id="auth-erreur" class="erreur" role="alert"></p>
+      <button id="auth-bouton" class="bouton" type="submit">Se connecter →</button>
+    </form>
+  </section>
+
+  <!-- Écran 2 : la messagerie -->
+  <main id="ecran-app" class="app">
+    <!-- 2a : la liste des contacts, sur le panneau bleu nuit -->
+    <section class="barre">
+      <header class="profil">
+        <span id="moi-avatar"></span>
+        <div>
+          <strong id="moi-nom"></strong>
+          <span id="statut-ws" class="pastille" data-etat="connexion">connexion…</span>
+        </div>
+        <button id="btn-theme" class="icone" type="button" title="Thème clair / sombre">◐</button>
+        <button id="btn-deconnexion" class="icone" type="button" title="Se déconnecter">⏻</button>
+      </header>
+      <h2 class="titre-liste">Discussions<em>.</em></h2>
+      <input id="recherche" class="recherche" type="search" placeholder="Rechercher…">
+      <ul id="contacts" class="contacts"></ul>
+      <p id="contacts-vide" class="vide-liste" hidden>Personne d'autre pour l'instant.</p>
+    </section>
+
+    <!-- 2b : la conversation (remplace la liste quand on touche un contact) -->
+    <section class="conversation">
+      <header id="conv-entete" class="conv-entete" hidden>
+        <button id="btn-retour" class="icone" type="button" aria-label="Retour">←</button>
+        <span id="conv-avatar"></span>
+        <div>
+          <strong id="conv-nom"></strong>
+          <span id="conv-statut"></span>
+        </div>
+      </header>
+      <div id="messages" class="messages" aria-live="polite"></div>
+      <div id="indicateur" class="indicateur" hidden aria-label="En train d'écrire"><span></span><span></span><span></span></div>
+      <form id="composer" class="composer" hidden>
+        <textarea id="saisie" rows="1" maxlength="2000" placeholder="Écrire…" enterkeyhint="send"></textarea>
+        <button class="bouton envoyer" type="submit" aria-label="Envoyer">→</button>
+      </form>
+    </section>
+  </main>
+
+  <div id="toasts" class="toasts" aria-live="assertive"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>

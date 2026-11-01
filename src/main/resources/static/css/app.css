@@ -1,0 +1,337 @@
+/* Écho — styles communs aux deux clients (bureau.html et mobile.html).
+   Fond crème + 4 couleurs, chacune avec UN rôle :
+     bleu nuit  → texte et panneau (connexion, liste des contacts)
+     terracotta → mes messages et les actions (Se connecter, Envoyer)
+     sauge      → ses messages et la présence
+     moutarde   → ce qui attire l'œil (non-lus, « écrit… »)
+   Titres en Libre Baskerville, texte en Work Sans. */
+
+/* ---------- Couleurs (thème clair, puis sombre) ---------- */
+:root {
+  --fond: #f3eee3;            /* crème */
+  --champ: #e7e0d1;           /* champs de saisie */
+  --texte: #1b2a4a;           /* bleu nuit */
+  --texte-doux: #7a7466;
+  --panneau: #1b2a4a;         /* bleu nuit */
+  --sur-panneau: #f3eee3;
+  --panneau-doux: rgba(243, 238, 227, .6);
+  --panneau-survol: rgba(243, 238, 227, .08);
+  --moi: #d9673e;             /* terracotta */
+  --sur-moi: #fff8ef;
+  --lui: #cfe2d4;             /* sauge pâle */
+  --sur-lui: #1b2a4a;
+  --en-ligne: #5fb07a;        /* sauge vive */
+  --attention: #e8b04b;       /* moutarde */
+  --attention-pale: #f6dfae;
+  --attention-texte: #a8761a; /* moutarde lisible sur crème */
+  --rouge: #c0392b;
+  --titre: "Libre Baskerville", Georgia, serif;
+  --police: "Work Sans", system-ui, sans-serif;
+  color-scheme: light;
+}
+
+:root[data-theme="sombre"] {
+  --fond: #121a2c;
+  --champ: #1e2840;
+  --texte: #f3eee3;
+  --texte-doux: #9aa1b5;
+  --panneau: #0b1222;
+  --lui: #2d4a3b;
+  --sur-lui: #e6f0e9;
+  --attention-pale: #4a3c1e;
+  --attention-texte: #e8b04b;
+  --rouge: #ff8a80;
+  color-scheme: dark;
+}
+
+/* ---------- Base ---------- */
+* { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; }
+
+body {
+  background: var(--fond);
+  color: var(--texte);
+  font-family: var(--police);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, textarea { font: inherit; color: inherit; }
+
+[hidden] { display: none !important; }
+
+/* un seul écran visible à la fois */
+body:not(.connecte) #ecran-app { display: none; }
+body.connecte #ecran-auth { display: none; }
+
+/* ---------- Composants ---------- */
+.logo { font-family: var(--titre); font-size: 22px; font-style: italic; }
+
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--moi);
+  color: var(--sur-moi);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform .1s, filter .15s;
+}
+.bouton:hover { filter: brightness(1.08); }
+.bouton:active { transform: scale(.97); }
+.bouton:disabled { opacity: .5; cursor: wait; }
+
+/* bouton rond « envoyer » */
+.envoyer { width: 46px; height: 46px; padding: 0; font-size: 19px; flex: none; }
+
+.icone {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--panneau-doux);
+  font-size: 17px;
+  cursor: pointer;
+}
+.icone:hover { background: var(--panneau-survol); color: var(--sur-panneau); }
+.conv-entete .icone { color: var(--texte-doux); }                 /* bouton ← sur fond crème */
+.conv-entete .icone:hover { background: var(--champ); color: var(--texte); }
+
+input, textarea {
+  width: 100%;
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--champ);
+  outline: none;
+}
+input:focus, textarea:focus { box-shadow: 0 0 0 2px var(--moi); }
+input::placeholder, textarea::placeholder { color: var(--texte-doux); }
+
+label { display: grid; gap: 6px; font-size: 13px; color: var(--texte-doux); }
+label input { font-size: 16px; color: var(--texte); }
+
+/* ---------- Écran de connexion ---------- */
+/* le panneau bleu nuit, avec la composition de bulles */
+.affiche {
+  position: relative;
+  overflow: hidden;
+  background: var(--panneau);
+  color: var(--sur-panneau);
+}
+.affiche h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-family: var(--titre);
+  font-weight: 400;
+  line-height: 1.05;
+}
+.affiche h1 em { color: var(--attention); }
+.affiche p { position: relative; z-index: 1; color: var(--panneau-doux); line-height: 1.6; }
+
+.deco { position: absolute; }
+.deco-moi { background: var(--moi); border-radius: 999px 999px 14px 999px; }
+.deco-lui { background: var(--lui); border-radius: 999px 999px 999px 14px; }
+.deco-saisie {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 999px;
+  background: var(--attention);
+}
+.deco-saisie span { width: 8px; height: 8px; border-radius: 50%; background: #1b2a4a; animation: rebond 1.2s infinite; }
+.deco-saisie span:nth-child(2) { animation-delay: .15s; }
+.deco-saisie span:nth-child(3) { animation-delay: .3s; }
+
+.auth-form { display: grid; gap: 18px; width: 100%; max-width: 360px; }
+.auth-form h2 { margin: 0; font-family: var(--titre); font-size: 28px; font-weight: 400; }
+
+/* onglets en pilule */
+.onglets {
+  display: flex;
+  gap: 4px;
+  width: fit-content;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--champ);
+}
+.onglet {
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--texte-doux);
+  font-weight: 500;
+  cursor: pointer;
+}
+.onglet.actif { background: var(--texte); color: var(--fond); }
+
+.aide { margin: -6px 0 0; color: var(--texte-doux); font-size: 13px; line-height: 1.5; }
+.erreur { min-height: 1.2em; margin: 0; color: var(--rouge); font-size: 14px; }
+
+/* ---------- Avatars (emoji) et présence ---------- */
+.avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+}
+.avatar.en-ligne::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--panneau);
+  border-radius: 50%;
+  background: var(--en-ligne);
+}
+.conv-entete .avatar.en-ligne::after { border-color: var(--fond); }
+
+/* état de la connexion WebSocket */
+.pastille { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--panneau-doux); white-space: nowrap; }
+.pastille::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--attention); }
+.pastille[data-etat="ok"]::before { background: var(--en-ligne); }
+.pastille[data-etat="coupe"]::before { background: var(--rouge); }
+
+/* ---------- Panneau des contacts (bleu nuit) ---------- */
+.barre { background: var(--panneau); color: var(--sur-panneau); }
+
+.recherche { margin: 4px 16px 10px; width: auto; background: var(--panneau-survol); color: var(--sur-panneau); }
+.recherche::placeholder { color: var(--panneau-doux); }
+
+.contacts { flex: 1; overflow-y: auto; margin: 0; padding: 0 10px 16px; list-style: none; }
+
+.contact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 2px;
+  padding: 10px;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.contact:hover { background: var(--panneau-survol); }
+.contact.actif { background: rgba(243, 238, 227, .14); }
+.contact .texte { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.contact strong { overflow: hidden; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+
+.sous-titre { font-size: 12px; color: var(--panneau-doux); }
+.sous-titre.ecrit { color: var(--attention); font-family: var(--titre); font-style: italic; }
+.conv-entete .sous-titre { color: var(--texte-doux); }
+.conv-entete .sous-titre.ecrit { color: var(--attention-texte); }
+
+.badge {
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--attention);
+  color: #1b2a4a;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.vide-liste { margin: 16px 20px; color: var(--panneau-doux); font-size: 14px; line-height: 1.6; }
+
+/* ---------- Conversation (fond crème) ---------- */
+.conv-entete { display: flex; align-items: center; gap: 12px; padding: 16px 24px; }
+.conv-entete > div { display: grid; gap: 2px; }
+.conv-entete strong { font-family: var(--titre); font-size: 21px; font-weight: 400; }
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 24px 16px;
+}
+
+.jour {
+  align-self: center;
+  margin: 14px 0 8px;
+  color: var(--texte-doux);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.bulle {
+  max-width: min(70%, 560px);
+  padding: 9px 15px 7px;
+  line-height: 1.45;
+  animation: arrivee .2s ease-out;
+}
+.bulle p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.bulle time { display: block; margin-top: 2px; font-size: 10.5px; font-variant-numeric: tabular-nums; opacity: .7; text-align: right; }
+/* coin serré du côté de la personne qui parle */
+.bulle.lui { align-self: flex-start; border-radius: 20px 20px 20px 6px; background: var(--lui); color: var(--sur-lui); }
+.bulle.moi { align-self: flex-end; border-radius: 20px 20px 6px 20px; background: var(--moi); color: var(--sur-moi); }
+.bulle.lui.suite { border-top-left-radius: 6px; }
+.bulle.moi.suite { border-top-right-radius: 6px; }
+.bulle.suite { margin-top: -3px; }
+@keyframes arrivee { from { opacity: 0; transform: translateY(6px) scale(.98); } }
+
+/* bonus : « en train d'écrire » */
+.indicateur {
+  display: flex;
+  gap: 5px;
+  margin: 0 24px 10px;
+  padding: 13px 15px;
+  width: fit-content;
+  border-radius: 20px;
+  background: var(--attention-pale);
+}
+.indicateur span { width: 7px; height: 7px; border-radius: 50%; background: var(--texte); animation: rebond 1s infinite; }
+.indicateur span:nth-child(2) { animation-delay: .15s; }
+.indicateur span:nth-child(3) { animation-delay: .3s; }
+@keyframes rebond { 0%, 60%, 100% { transform: none; } 30% { transform: translateY(-4px); } }
+
+.composer { display: flex; align-items: flex-end; gap: 10px; padding: 12px 24px 20px; }
+.composer textarea { resize: none; max-height: 160px; padding: 12px 18px; border-radius: 23px; line-height: 1.45; }
+
+/* ---------- Notifications ---------- */
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 10;
+  display: grid;
+  gap: 8px;
+  transform: translateX(-50%);
+  width: min(92vw, 380px);
+}
+.toast {
+  padding: 12px 18px;
+  border-radius: 16px;
+  background: var(--panneau);
+  color: var(--sur-panneau);
+  font-size: 14px;
+  animation: arrivee .2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

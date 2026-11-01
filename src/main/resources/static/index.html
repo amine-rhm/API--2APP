@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Écho</title>
+  <script>
+    // http://<adresse>:8080/ → téléphone : mobile.html, ordinateur : bureau.html
+    location.replace(matchMedia("(max-width: 760px), (pointer: coarse)").matches ? "mobile.html" : "bureau.html");
+  </script>
+</head>
+<body>
+  <a href="bureau.html">Version bureau</a> · <a href="mobile.html">Version mobile</a>
+</body>
+</html>

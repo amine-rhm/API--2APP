@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Écho — Bureau</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='1' y='4' width='22' height='14' rx='7' fill='%23d9673e'/><rect x='9' y='14' width='22' height='14' rx='7' fill='%239cbfa7'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Work+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    /* ----- Mise en page « bureau » : panneau + formulaire, puis deux colonnes ----- */
+    .auth {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      min-height: 100vh;
+    }
+    .affiche {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px 56px 48px;
+    }
+    .affiche h1 { font-size: clamp(48px, 6.5vw, 96px); }
+    .affiche p { max-width: 380px; font-size: 16px; }
+    /* la composition de bulles, en haut à droite du panneau (le titre est en bas) */
+    .affiche .deco-saisie { right: 14%; top: 12%; width: 92px; height: 42px; }
+    .affiche .deco-lui { right: 26%; top: 22%; width: 200px; height: 76px; }
+    .affiche .deco-moi { right: -40px; top: 36%; width: 280px; height: 96px; }
+    .auth > form { align-self: center; justify-self: center; margin: 40px; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: 100vh;
+    }
+    .barre { display: flex; flex-direction: column; min-height: 0; }
+    .barre .logo { padding: 24px 20px 4px; }
+    .profil { display: flex; align-items: center; gap: 12px; padding: 14px 16px 14px 20px; }
+    .profil > div { flex: 1; display: grid; gap: 3px; min-width: 0; }
+    .conversation { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .vide {
+      flex: 1;
+      display: grid;
+      place-content: center;
+      gap: 10px;
+      padding: 40px;
+      text-align: center;
+      color: var(--texte-doux);
+    }
+    .vide .grand { margin: 0; color: var(--texte); font-family: var(--titre); font-size: 30px; line-height: 1.3; }
+    .vide .grand em { color: var(--moi); }
+    .conversation-ouverte .vide { display: none; }
+
+    @media (max-width: 860px) {
+      .auth { grid-template-columns: 1fr; }
+      .affiche { min-height: 340px; padding: 28px 24px; }
+      .app { grid-template-columns: 260px 1fr; }
+    }
+  </style>
+</head>
+<body class="bureau">
+
+  <!-- Écran 1 : connexion / inscription -->
+  <section id="ecran-auth" class="auth">
+    <div class="affiche">
+      <span class="logo">Écho</span>
+      <div>
+        <h1>Parle,<br><em>en direct.</em></h1>
+        <p>Une messagerie entre deux appareils&nbsp;: tes messages arrivent de l'autre côté sans recharger la page.</p>
+      </div>
+      <div class="deco deco-lui" aria-hidden="true"></div>
+      <div class="deco deco-moi" aria-hidden="true"></div>
+      <div class="deco deco-saisie" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+
+    <form id="form-auth" class="auth-form" novalidate>
+      <h2>Bienvenue&nbsp;!</h2>
+      <div class="onglets">
+        <button type="button" class="onglet actif" data-onglet="connexion">Connexion</button>
+        <button type="button" class="onglet" data-onglet="inscription">Inscription</button>
+      </div>
+      <label>Nom d'utilisateur
+        <input id="auth-nom" autocomplete="username" required>
+      </label>
+      <label>Mot de passe
+        <input id="auth-mdp" type="password" autocomplete="current-password" required>
+      </label>
+      <p id="auth-aide" class="aide" hidden>3 à 30 caractères (lettres, chiffres, _) · mot de passe de 8 caractères minimum</p>
+      <p id="auth-erreur" class="erreur" role="alert"></p>
+      <button id="auth-bouton" class="bouton" type="submit">Se connecter →</button>
+    </form>
+  </section>
+
+  <!-- Écran 2 : la messagerie -->
+  <main id="ecran-app" class="app">
+    <aside class="barre">
+      <span class="logo">Écho</span>
+      <header class="profil">
+        <span id="moi-avatar"></span>
+        <div>
+          <strong id="moi-nom"></strong>
+          <span id="statut-ws" class="pastille" data-etat="connexion">connexion…</span>
+        </div>
+        <button id="btn-theme" class="icone" type="button" title="Thème clair / sombre">◐</button>
+        <button id="btn-deconnexion" class="icone" type="button" title="Se déconnecter">⏻</button>
+      </header>
+      <input id="recherche" class="recherche" type="search" placeholder="Rechercher…">
+      <ul id="contacts" class="contacts"></ul>
+      <p id="contacts-vide" class="vide-liste" hidden>Personne d'autre pour l'instant.<br>Crée un deuxième compte dans un autre onglet.</p>
+    </aside>
+
+    <section class="conversation">
+      <header id="conv-entete" class="conv-entete" hidden>
+        <span id="conv-avatar"></span>
+        <div>
+          <strong id="conv-nom"></strong>
+          <span id="conv-statut"></span>
+        </div>
+      </header>
+      <div id="vide" class="vide">
+        <p class="grand">Choisis quelqu'un<br><em>à qui écrire.</em></p>
+        <p>Les messages arrivent en direct, sans recharger la page.</p>
+      </div>
+      <div id="messages" class="messages" aria-live="polite"></div>
+      <div id="indicateur" class="indicateur" hidden aria-label="En train d'écrire"><span></span><span></span><span></span></div>
+      <form id="composer" class="composer" hidden>
+        <textarea id="saisie" rows="1" maxlength="2000" placeholder="Écrire…" title="Entrée pour envoyer, Maj+Entrée pour aller à la ligne"></textarea>
+        <button class="bouton envoyer" type="submit" aria-label="Envoyer">→</button>
+      </form>
+    </section>
+  </main>
+
+  <div id="toasts" class="toasts" aria-live="assertive"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
